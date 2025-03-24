@@ -8,14 +8,6 @@ let getSubMatrix (matrix: float[,]) (excludeRow: int) (excludeCol: int) : float[
         let col = if j >= excludeCol then j + 1 else j
         matrix.[row, col])
 
-let printMatrix (label: string) (matrix: float[,]) =
-    printfn "%s:" label
-    let rows = matrix.GetLength(0)
-    let cols = matrix.GetLength(1)
-    for i in 0 .. rows - 1 do
-        let row = [ for j in 0 .. cols - 1 -> matrix.[i, j] ]
-        printfn "  %s" (String.concat "  " (row |> List.map (sprintf "%6.1f")))
-
 let sumMatriceFunc (A: float[,]) (B: float[,]):float[,] =
     let rows = A.GetLength(0)
     let cols = A.GetLength(1)
@@ -114,20 +106,31 @@ let rec detProc (matrix: float[,]) : float =
             let sign = if j % 2 = 0 then 1.0 else -1.0
             let subMatrix = getSubMatrix matrix 0 j
             result <- result + matrix.[0, j] * sign * (detProc subMatrix)
-        result
+        result  
+
+let printMatrix (label: string) (matrix: float[,]) =
+    printfn "%s:" label
+    let rows = matrix.GetLength(0)
+    let cols = matrix.GetLength(1)
+    for i in 0 .. rows - 1 do
+        let row = [ for j in 0 .. cols - 1 -> matrix.[i, j] ]
+        printfn "  %s" (String.concat "  " (row |> List.map (sprintf "%6.1f")))
+
+let printResults (A: float[,],B:float[,]): unit =
+    printMatrix "Matice A" A
+    printMatrix "Matice B" B
+    printMatrix "\nSoučet matic A+B (funkcionální)" (sumMatriceFunc A B)
+    printMatrix "\nSoučet matic A+B (procedurální)" (sumMatriceProc A B)
+    printMatrix "\nRozdíl matic A-B (funkcionální)" (subMatriceFunc A B)
+    printMatrix "\nRozdíl matic A-B (procedurální)" (subMatriceProc A B)
+    printMatrix "\nSoučin matic A*B (funkcionální)" (multiMatriceFunc A B)
+    printMatrix "\nSoučin matic A*B (procedurální)" (multiMatriceProc A B)
+    printfn "\nDeterminant matice A (funkcionální): %f" (detFunc A)
+    printfn "Determinant matice A (procedurální): %f" (detProc A)
 
 let A:float[,] = array2D [[2; 3; 5; 5]; [1; 4; 6; 7]; [1; 5; 1; 2]; [9; 5; 3; 1]]
 let B:float[,] = array2D [[5; 6; 2; 1]; [7; 8; 3; 2]; [2; 2; 3; 4]; [5; 2; 3; 7]]
 
-printMatrix "Matice A" A
-printMatrix "Matice B" B
-printMatrix "Součet matic A+B (funkcionální)" (sumMatriceFunc A B)
-printMatrix "Součet matic A+B (procedurální)" (sumMatriceProc A B)
-printMatrix "Rozdíl matic A-B (funkcionální)" (subMatriceFunc A B)
-printMatrix "Rozdíl matic A-B (procedurální)" (subMatriceProc A B)
-printMatrix "Součin matic A*B (funkcionální)" (multiMatriceFunc A B)
-printMatrix "Součin matic A*B (procedurální)" (multiMatriceProc A B)
-printfn "Determinant matice A (funkcionální): %f" (detFunc A)
-printfn "Determinant matice A (procedurální): %f" (detProc A)
+printResults(A,B);
 
 Console.ReadKey() |> ignore

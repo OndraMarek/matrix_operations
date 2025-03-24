@@ -109,33 +109,59 @@ let rec detProc (matrix: float[,]) : float =
         result  
 
 let printMatrix (label: string) (matrix: float[,]) =
-    printfn "Matice %s:" label
+    printfn "%s:" label
     let rows = matrix.GetLength(0)
     let cols = matrix.GetLength(1)
     for i in 0 .. rows - 1 do
         let row = [ for j in 0 .. cols - 1 -> matrix.[i, j] ]
         printfn "  %s" (String.concat "  " (row |> List.map (sprintf "%6.1f")))
 
-let getUserInput(label: string): float[,] =
-    printf "Zadejte řád čtvercové matice %s: " label
-    let order = Console.ReadLine() |> int
+let tryParseFloat (str: string) : float option =
+    match Double.TryParse(str) with
+    | (true, value) -> Some value
+    | _ -> None
+
+let getMatrixOrder (label: string) : int =
+    let rec getValidOrder () =
+        printf "Zadejte řád čtvercové matice %s: " label
+        match Int32.TryParse(Console.ReadLine()) with
+        | (true, value) when value > 0 -> value
+        | _ -> 
+            printfn "Chyba: Zadejte platné kladné celé číslo."
+            getValidOrder ()
+    getValidOrder ()
+
+let validateAndParseRow (input: string[]) (expectedLength: int) : float[] option =
+    if input.Length = expectedLength && input |> Array.forall (tryParseFloat >> Option.isSome) then
+        input |> Array.map (tryParseFloat >> Option.get)
+        |> Some
+    else
+        None
+
+let rec getRowInput (rowNum: int) (order: int) : float[] =
+    printf "Zadejte prvky pro řádek %d oddělené mezerou: " rowNum
+    let input = Console.ReadLine().Split(' ')
+    match validateAndParseRow input order with
+    | Some row -> row
+    | None -> 
+        printfn "Chyba: Musíte zadat přesně %d platných čísel." order
+        getRowInput rowNum order
+
+let fillMatrix (order: int) : float[,] =
     let matrix = Array2D.zeroCreate<float> order order
     for i in 0 .. order - 1 do
-        let mutable validInput = false
-        while not validInput do
-            printf "Zadejte prvky pro řádek %d oddělené mezerou: " (i + 1)
-            let row = Console.ReadLine().Split(' ') |> Array.map float
-            if row.Length = order then
-                for j in 0 .. order - 1 do
-                    matrix.[i, j] <- row.[j]
-                validInput <- true
-            else
-                printfn "Chyba: Musíte zadat přesně %d prvků." order
+        let row = getRowInput (i + 1) order
+        for j in 0 .. order - 1 do
+            matrix.[i, j] <- row.[j]
     matrix
 
+let getUserInput (label: string) : float[,] =
+    let order = getMatrixOrder label
+    fillMatrix order
+
 let printResults (A: float[,],B:float[,]): unit =
-    printMatrix "A" A
-    printMatrix "B" B
+    printMatrix "Matice A" A
+    printMatrix "Matice B" B
     printMatrix "\nSoučet matic A+B (funkcionální)" (sumMatriceFunc A B)
     printMatrix "\nSoučet matic A+B (procedurální)" (sumMatriceProc A B)
     printMatrix "\nRozdíl matic A-B (funkcionální)" (subMatriceFunc A B)

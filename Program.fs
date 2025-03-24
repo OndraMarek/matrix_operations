@@ -163,6 +163,13 @@ let getUserInput (label: string) (order: int option) : float[,] =
         let o = getMatrixOrder label
         fillMatrix o label
 
+let rec exitOrContinue (main: unit -> unit) =
+    printfn "Zadejte 1 pro pokračování nebo jakoukoliv jinou klávesu pro ukončení."
+    let key = Console.ReadKey(true)
+    match key.KeyChar with
+    | '1' -> main ()
+    | _ -> Environment.Exit(0)
+
 let printResults (A: float[,],B:float[,]): unit =
     Console.Clear();
     printMatrix "Matice A" A
@@ -176,9 +183,13 @@ let printResults (A: float[,],B:float[,]): unit =
     printfn "\nDeterminant matice A (funkcionální): %f" (detFunc A)
     printfn "Determinant matice A (procedurální): %f" (detProc A)
 
-let A:float[,] = getUserInput "A" None;
-let B:float[,] = getUserInput "B" (Some (Array2D.length1 A));
+let rec main () =
+    Console.Clear();
+    let A: float[,] = getUserInput "A" None
+    let B: float[,] = getUserInput "B" (Some (Array2D.length1 A))
+    printResults (A, B)
+    exitOrContinue main
 
-printResults(A,B);
+main ()
 
 Console.ReadKey() |> ignore

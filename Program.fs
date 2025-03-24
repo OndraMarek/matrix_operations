@@ -109,16 +109,33 @@ let rec detProc (matrix: float[,]) : float =
         result  
 
 let printMatrix (label: string) (matrix: float[,]) =
-    printfn "%s:" label
+    printfn "Matice %s:" label
     let rows = matrix.GetLength(0)
     let cols = matrix.GetLength(1)
     for i in 0 .. rows - 1 do
         let row = [ for j in 0 .. cols - 1 -> matrix.[i, j] ]
         printfn "  %s" (String.concat "  " (row |> List.map (sprintf "%6.1f")))
 
+let getUserInput(label: string): float[,] =
+    printf "Zadejte řád čtvercové matice %s: " label
+    let order = Console.ReadLine() |> int
+    let matrix = Array2D.zeroCreate<float> order order
+    for i in 0 .. order - 1 do
+        let mutable validInput = false
+        while not validInput do
+            printf "Zadejte prvky pro řádek %d oddělené mezerou: " (i + 1)
+            let row = Console.ReadLine().Split(' ') |> Array.map float
+            if row.Length = order then
+                for j in 0 .. order - 1 do
+                    matrix.[i, j] <- row.[j]
+                validInput <- true
+            else
+                printfn "Chyba: Musíte zadat přesně %d prvků." order
+    matrix
+
 let printResults (A: float[,],B:float[,]): unit =
-    printMatrix "Matice A" A
-    printMatrix "Matice B" B
+    printMatrix "A" A
+    printMatrix "B" B
     printMatrix "\nSoučet matic A+B (funkcionální)" (sumMatriceFunc A B)
     printMatrix "\nSoučet matic A+B (procedurální)" (sumMatriceProc A B)
     printMatrix "\nRozdíl matic A-B (funkcionální)" (subMatriceFunc A B)
@@ -128,8 +145,8 @@ let printResults (A: float[,],B:float[,]): unit =
     printfn "\nDeterminant matice A (funkcionální): %f" (detFunc A)
     printfn "Determinant matice A (procedurální): %f" (detProc A)
 
-let A:float[,] = array2D [[2; 3; 5; 5]; [1; 4; 6; 7]; [1; 5; 1; 2]; [9; 5; 3; 1]]
-let B:float[,] = array2D [[5; 6; 2; 1]; [7; 8; 3; 2]; [2; 2; 3; 4]; [5; 2; 3; 7]]
+let A:float[,] = getUserInput "A";
+let B:float[,] = getUserInput "B";
 
 printResults(A,B);
 

@@ -139,7 +139,7 @@ let validateAndParseRow (input: string[]) (expectedLength: int) : float[] option
         None
 
 let rec getRowInput (rowNum: int) (order: int) : float[] =
-    printf "Zadejte prvky pro řádek %d oddělené mezerou: " rowNum
+    printf "Zadejte prvky pro řádek %d matice oddělené mezerou: " rowNum
     let input = Console.ReadLine().Split(' ')
     match validateAndParseRow input order with
     | Some row -> row
@@ -147,7 +147,8 @@ let rec getRowInput (rowNum: int) (order: int) : float[] =
         printfn "Chyba: Musíte zadat přesně %d platných čísel." order
         getRowInput rowNum order
 
-let fillMatrix (order: int) : float[,] =
+let fillMatrix (order: int) (label: string) : float[,] =
+    printfn "Zadávání matice %s:" label
     let matrix = Array2D.zeroCreate<float> order order
     for i in 0 .. order - 1 do
         let row = getRowInput (i + 1) order
@@ -155,11 +156,15 @@ let fillMatrix (order: int) : float[,] =
             matrix.[i, j] <- row.[j]
     matrix
 
-let getUserInput (label: string) : float[,] =
-    let order = getMatrixOrder label
-    fillMatrix order
+let getUserInput (label: string) (order: int option) : float[,] =
+    match order with
+    | Some o -> fillMatrix o label
+    | None -> 
+        let o = getMatrixOrder label
+        fillMatrix o label
 
 let printResults (A: float[,],B:float[,]): unit =
+    Console.Clear();
     printMatrix "Matice A" A
     printMatrix "Matice B" B
     printMatrix "\nSoučet matic A+B (funkcionální)" (sumMatriceFunc A B)
@@ -171,8 +176,8 @@ let printResults (A: float[,],B:float[,]): unit =
     printfn "\nDeterminant matice A (funkcionální): %f" (detFunc A)
     printfn "Determinant matice A (procedurální): %f" (detProc A)
 
-let A:float[,] = getUserInput "A";
-let B:float[,] = getUserInput "B";
+let A:float[,] = getUserInput "A" None;
+let B:float[,] = getUserInput "B" (Some (Array2D.length1 A));
 
 printResults(A,B);
 
